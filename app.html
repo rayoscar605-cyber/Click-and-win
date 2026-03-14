@@ -1,107 +1,67 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click & Win - Versión Final</title>
+    <title>Click & Win</title>
+    <!-- CONEXIÓN REAL CON START.IO -->
+    <script src="https://start.io" type="text/javascript"></script>
+    <script type="text/javascript">
+        var startapp = new StartApp.Banner("202858798"); 
+    </script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #0f172a; color: white; padding: 20px; }
-        .container { background: #1e293b; max-width: 360px; margin: auto; padding: 25px; border-radius: 30px; border: 1px solid #334155; }
-        #btn-main { 
-            width: 160px; height: 160px; border-radius: 50%; border: none; 
-            background: linear-gradient(145deg, #fbbf24, #d97706); color: white; 
-            font-size: 24px; font-weight: bold; cursor: pointer; 
-            box-shadow: 0 8px #92400e; transition: 0.1s; margin: 20px 0;
-        }
-        #btn-main:active { box-shadow: 0 2px #92400e; transform: translateY(4px); }
-        #btn-main:disabled { background: #475569; box-shadow: none; color: #94a3b8; cursor: not-allowed; }
-        .points { font-size: 45px; color: #fbbf24; font-weight: bold; display: block; }
-        .info-row { display: flex; justify-content: space-around; margin: 15px 0; font-size: 14px; color: #cbd5e1; }
-        .limit-reached { color: #f87171; font-weight: bold; display: none; background: rgba(248,113,113,0.1); padding: 10px; border-radius: 10px; }
+        body { font-family: sans-serif; text-align: center; background: #0f172a; color: white; padding: 20px; }
+        .card { background: #1e293b; max-width: 350px; margin: auto; padding: 25px; border-radius: 30px; border: 1px solid #334155; }
+        #btn-click { width: 150px; height: 150px; border-radius: 50%; border: none; background: #fbbf24; font-size: 22px; font-weight: bold; cursor: pointer; margin: 20px 0; box-shadow: 0 6px #92400e; }
+        #btn-click:active { transform: translateY(3px); box-shadow: 0 3px #92400e; }
+        #btn-click:disabled { background: #475569; color: #94a3b8; box-shadow: none; cursor: not-allowed; }
+        .points { font-size: 40px; color: #fbbf24; font-weight: bold; display: block; }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <div class="score-board">
-            <span style="font-size: 12px; color: #94a3b8;">Puntos Totales</span>
-            <span class="points" id="val-puntos">0</span>
+    <div class="card">
+        <span style="color: #94a3b8; font-size: 12px;">PUNTOS TOTALES</span>
+        <span class="points" id="pts">0</span>
+        <div style="display: flex; justify-content: space-around; margin: 15px 0; font-size: 14px;">
+            <div>Clics: <b id="clic">3</b></div>
+            <div>Ads hoy: <b id="ads">0</b>/20</div>
         </div>
-
-        <div class="info-row">
-            <div>Clics: <b id="val-clics">3</b></div>
-            <div>Anuncios: <b id="val-anuncios">0</b>/20</div>
-        </div>
-        
-        <button id="btn-main">¡CLICK!</button>
-        <p id="msg-bloqueo" class="limit-reached">🚫 Límite diario alcanzado (20/20).</p>
+        <button id="btn-click">¡CLICK!</button>
+        <p id="bloqueo" style="color: #f87171; display: none; font-weight: bold;">🚫 Límite de 20 anuncios alcanzado.</p>
     </div>
 
     <script>
-        // 1. CONFIGURACIÓN INICIAL
-        const LIMITE_MAX = 20;
+        let pts = parseInt(localStorage.getItem('p')) || 0;
+        let ads = parseInt(localStorage.getItem('a')) || 0;
+        let c = 3;
         const hoy = new Date().toLocaleDateString();
 
-        // 2. CARGAR O INICIALIZAR EN CERO
-        // Si es la primera vez o es un nuevo día, forzamos el cero en anuncios
-        if (localStorage.getItem('fecha_registro') !== hoy) {
-            localStorage.setItem('ads_vistos', 0);
-            localStorage.setItem('fecha_registro', hoy);
+        if (localStorage.getItem('f') !== hoy) { ads = 0; localStorage.setItem('a', 0); localStorage.setItem('f', hoy); }
+
+        function up() {
+            document.getElementById('pts').innerText = pts;
+            document.getElementById('clic').innerText = c;
+            document.getElementById('ads').innerText = ads;
+            if (ads >= 20) { document.getElementById('btn-click').disabled = true; document.getElementById('bloqueo').style.display = "block"; }
         }
 
-        let misPuntos = parseInt(localStorage.getItem('pts_acumulados')) || 0;
-        let anunciosHoy = parseInt(localStorage.getItem('ads_vistos')) || 0;
-        let clicsContador = 3;
-
-        const btn = document.getElementById('btn-main');
-        const txtPts = document.getElementById('val-puntos');
-        const txtClics = document.getElementById('val-clics');
-        const txtAds = document.getElementById('val-anuncios');
-        const msg = document.getElementById('msg-bloqueo');
-
-        function actualizarPantalla() {
-            txtPts.innerText = misPuntos;
-            txtClics.innerText = clicsContador;
-            txtAds.innerText = anunciosHoy;
-
-            if (anunciosHoy >= LIMITE_MAX) {
-                btn.disabled = true;
-                btn.innerText = "FIN";
-                msg.style.display = "block";
+        document.getElementById('btn-click').onclick = () => {
+            c--;
+            if (c === 0) {
+                // LLAMADA AL ANUNCIO REAL
+                startapp.showInterstitial(); 
+                ads++;
+                let r = Math.floor(Math.random() * 5) + 1;
+                pts += r;
+                localStorage.setItem('p', pts);
+                localStorage.setItem('a', ads);
+                c = 3;
+                alert("🎁 ¡Ganaste " + r + " puntos!");
             }
-        }
-
-        btn.onclick = () => {
-            // Evitar que siga si ya llegó al límite
-            if (anunciosHoy >= LIMITE_MAX) return;
-
-            clicsContador--;
-
-            if (clicsContador === 0) {
-                // SIMULACIÓN DE ANUNCIO
-                alert("🎬 Cargando Anuncio...");
-                
-                // RECOMPENSA ALEATORIA 1 A 5
-                let premio = Math.floor(Math.random() * 5) + 1;
-                
-                // ACTUALIZAR DATOS SOLO TRAS EL ANUNCIO
-                anunciosHoy++;
-                misPuntos += premio;
-                
-                // GUARDAR EN MEMORIA
-                localStorage.setItem('pts_acumulados', misPuntos);
-                localStorage.setItem('ads_vistos', anunciosHoy);
-                
-                alert("🎁 ¡Felicidades! Ganaste " + premio + " puntos.");
-                
-                // REINICIAR CLICS
-                clicsContador = 3;
-            }
-            actualizarPantalla();
+            up();
         };
-
-        // Iniciar la app mostrando los valores actuales (0 si es nueva)
-        actualizarPantalla();
+        up();
     </script>
 </body>
 </html>
+
