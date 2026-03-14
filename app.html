@@ -3,86 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click & Win Oficial</title>
+    <title>Click & Win Pro</title>
+    <!-- SDK de Start.io actualizado -->
     <script src="https://start.io" type="text/javascript"></script>
     <script type="text/javascript">
-        // TU ID REAL CONECTADO
-        var startapp = new StartApp.Banner("202858798"); 
+        // Inicializamos con tu ID 202858798
+        var startAppSdk = new StartApp.SDK();
+        startAppSdk.init("202858798");
     </script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #0f172a; color: white; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #0f172a; color: white; padding: 20px; }
         .card { background: #1e293b; max-width: 350px; margin: auto; padding: 25px; border-radius: 30px; border: 1px solid #334155; }
-        #btn-click { width: 160px; height: 160px; border-radius: 50%; border: none; background: #fbbf24; font-size: 24px; font-weight: bold; cursor: pointer; margin: 20px 0; box-shadow: 0 8px #92400e; }
-        #btn-click:active { transform: translateY(4px); box-shadow: 0 4px #92400e; }
-        #btn-click:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        #btn-main { width: 160px; height: 160px; border-radius: 50%; border: none; background: #fbbf24; font-size: 24px; font-weight: bold; cursor: pointer; margin: 20px 0; box-shadow: 0 8px #92400e; }
+        #btn-main:active { transform: translateY(4px); box-shadow: 0 4px #92400e; }
+        #btn-main:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
         .points { font-size: 45px; color: #fbbf24; font-weight: bold; display: block; }
     </style>
 </head>
 <body>
     <div class="card">
-        <span style="color: #94a3b8; font-size: 12px;">MIS PUNTOS</span>
-        <span class="points" id="val-pts">0</span>
-        <div style="display: flex; justify-content: space-around; margin: 20px 0;">
-            <div>Clics: <b id="val-clic">3</b></div>
+        <span style="color: #94a3b8; font-size: 12px;">PUNTOS</span>
+        <span class="points" id="val-puntos">0</span>
+        <div style="display: flex; justify-content: space-around; margin: 15px 0;">
+            <div>Clics: <b id="val-clics">3</b></div>
             <div>Ads: <b id="val-ads">0</b>/20</div>
         </div>
-        <button id="btn-click">¡CLICK!</button>
-        <p id="msg-fin" style="color: #f87171; display: none;">🚫 Límite de hoy alcanzado.</p>
+        <button id="btn-main">¡CLICK!</button>
     </div>
 
     <script>
-        // Cargar datos
-        let pts = parseInt(localStorage.getItem('pts_save')) || 0;
-        let ads = parseInt(localStorage.getItem('ads_save')) || 0;
+        let pts = parseInt(localStorage.getItem('pts_v2')) || 0;
+        let ads = parseInt(localStorage.getItem('ads_v2')) || 0;
         let contador = 3;
-        const hoy = new Date().toLocaleDateString();
 
-        if (localStorage.getItem('fecha_save') !== hoy) {
-            ads = 0;
-            localStorage.setItem('ads_save', 0);
-            localStorage.setItem('fecha_save', hoy);
-        }
-
-        function actualizar() {
-            document.getElementById('val-pts').innerText = pts;
-            document.getElementById('val-clic').innerText = contador;
+        function update() {
+            document.getElementById('val-puntos').innerText = pts;
+            document.getElementById('val-clics').innerText = contador;
             document.getElementById('val-ads').innerText = ads;
-            if (ads >= 20) {
-                document.getElementById('btn-main').disabled = true;
-                document.getElementById('msg-fin').style.display = "block";
-            }
+            if (ads >= 20) document.getElementById('btn-main').disabled = true;
         }
 
-        document.getElementById('btn-click').onclick = function() {
+        document.getElementById('btn-main').onclick = function() {
             if (ads >= 20) return;
-
-            contador--; // Restar 1 al contador
-            
-            if (contador <= 0) {
-                // MOSTRAR ANUNCIO
+            contador--;
+            if (contador === 0) {
+                // INTENTAR MOSTRAR ANUNCIO
                 try {
-                    startapp.showInterstitial();
+                    startAppSdk.showInterstitial();
                 } catch(e) {
-                    console.log("Error al cargar anuncio");
+                    console.log("Esperando carga de anuncio...");
                 }
-
-                // Sumar puntos y anuncio
+                
                 ads++;
-                let premio = Math.floor(Math.random() * 5) + 1;
-                pts += premio;
-                
-                // Guardar
-                localStorage.setItem('pts_save', pts);
-                localStorage.setItem('ads_save', ads);
-                
-                // REINICIAR CONTADOR A 3
-                contador = 3; 
-                alert("🎁 ¡Ganaste " + premio + " puntos!");
+                let p = Math.floor(Math.random() * 5) + 1;
+                pts += p;
+                localStorage.setItem('pts_v2', pts);
+                localStorage.setItem('ads_v2', ads);
+                contador = 3;
+                alert("🎁 Ganaste " + p + " puntos!");
             }
-            actualizar();
+            update();
         };
-
-        actualizar();
+        update();
     </script>
 </body>
 </html>
