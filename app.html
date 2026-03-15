@@ -3,68 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click & Win Pro</title>
-    <!-- SDK de Start.io actualizado -->
+    <title>Click & Win - ID Oficial</title>
+
+    <!-- SDK DE START.IO CON TU NUEVO ID: 202131417 -->
     <script src="https://start.io" type="text/javascript"></script>
     <script type="text/javascript">
-        // Inicializamos con tu ID 202131417
         var startAppSdk = new StartApp.SDK();
-        startAppSdk.init("202858798");
+        startAppSdk.init("202131417");
     </script>
+
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #0f172a; color: white; padding: 20px; }
-        .card { background: #1e293b; max-width: 350px; margin: auto; padding: 25px; border-radius: 30px; border: 1px solid #334155; }
+        body { font-family: sans-serif; text-align: center; background: #0f172a; color: white; padding: 20px; }
+        .card { background: #1e293b; max-width: 350px; margin: auto; padding: 25px; border-radius: 30px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         #btn-main { width: 160px; height: 160px; border-radius: 50%; border: none; background: #fbbf24; font-size: 24px; font-weight: bold; cursor: pointer; margin: 20px 0; box-shadow: 0 8px #92400e; }
         #btn-main:active { transform: translateY(4px); box-shadow: 0 4px #92400e; }
-        #btn-main:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+        #btn-main:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
         .points { font-size: 45px; color: #fbbf24; font-weight: bold; display: block; }
     </style>
 </head>
 <body>
+
     <div class="card">
-        <span style="color: #94a3b8; font-size: 12px;">PUNTOS</span>
+        <span style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Puntos Acumulados</span>
         <span class="points" id="val-puntos">0</span>
-        <div style="display: flex; justify-content: space-around; margin: 15px 0;">
+        
+        <div style="display: flex; justify-content: space-around; margin: 20px 0; font-size: 14px;">
             <div>Clics: <b id="val-clics">3</b></div>
             <div>Ads: <b id="val-ads">0</b>/20</div>
         </div>
+        
         <button id="btn-main">¡CLICK!</button>
+        <p id="msg-limite" style="color: #f87171; display: none; font-weight: bold;">🚫 Has llegado al límite de hoy.</p>
     </div>
 
     <script>
-        let pts = parseInt(localStorage.getItem('pts_v2')) || 0;
-        let ads = parseInt(localStorage.getItem('ads_v2')) || 0;
-        let contador = 3;
+        // Variables de datos (usamos nombres únicos para no chocar con versiones viejas)
+        let misPuntos = parseInt(localStorage.getItem('pts_vFinal')) || 0;
+        let misAds = parseInt(localStorage.getItem('ads_vFinal')) || 0;
+        let miContador = 3;
+        const fechaHoy = new Date().toLocaleDateString();
 
-        function update() {
-            document.getElementById('val-puntos').innerText = pts;
-            document.getElementById('val-clics').innerText = contador;
-            document.getElementById('val-ads').innerText = ads;
-            if (ads >= 20) document.getElementById('btn-main').disabled = true;
+        // Reinicio diario
+        if (localStorage.getItem('fecha_vFinal') !== fechaHoy) {
+            misAds = 0;
+            localStorage.setItem('ads_vFinal', 0);
+            localStorage.setItem('fecha_vFinal', fechaHoy);
+        }
+
+        function refrescarUI() {
+            document.getElementById('val-puntos').innerText = misPuntos;
+            document.getElementById('val-clics').innerText = miContador;
+            document.getElementById('val-ads').innerText = misAds;
+            if (misAds >= 20) {
+                document.getElementById('btn-main').disabled = true;
+                document.getElementById('msg-limite').style.display = "block";
+            }
         }
 
         document.getElementById('btn-main').onclick = function() {
-            if (ads >= 20) return;
-            contador--;
-            if (contador === 0) {
-                // INTENTAR MOSTRAR ANUNCIO
+            if (misAds >= 20) return;
+
+            miContador--;
+
+            if (miContador === 0) {
+                // LLAMADA AL ANUNCIO REAL
                 try {
                     startAppSdk.showInterstitial();
                 } catch(e) {
-                    console.log("Esperando carga de anuncio...");
+                    console.log("Cargando anuncio...");
                 }
+
+                // Premio aleatorio de 1 a 5
+                let premio = Math.floor(Math.random() * 5) + 1;
                 
-                ads++;
-                let p = Math.floor(Math.random() * 5) + 1;
-                pts += p;
-                localStorage.setItem('pts_v2', pts);
-                localStorage.setItem('ads_v2', ads);
-                contador = 3;
-                alert("🎁 Ganaste " + p + " puntos!");
+                misAds++;
+                misPuntos += premio;
+                
+                // Guardar progreso
+                localStorage.setItem('pts_vFinal', misPuntos);
+                localStorage.setItem('ads_vFinal', misAds);
+                
+                miContador = 3; // Reiniciar contador
+                alert("🎁 ¡Felicidades! Ganaste " + premio + " puntos.");
             }
-            update();
+            refrescarUI();
         };
-        update();
+
+        refrescarUI(); // Mostrar datos al cargar
     </script>
 </body>
 </html>
